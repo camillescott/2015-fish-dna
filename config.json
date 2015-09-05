@@ -1,0 +1,69 @@
+{
+    "meta" : {
+	    "authors": ["Russell Neches", "Camille Scott"],
+	    "description": "",
+	    "data_type": ["DNA-seq"],
+	    "date": 2015
+    },
+
+    "pipeline": {
+        "prefix": "fish",
+        "work_dir": "_work",
+        
+        "trimmomatic": { 
+            "n_threads": 4,
+            "params": "LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:32" 
+        },
+
+        "khmer": {
+            "normalization": {
+                "single": {
+                    "ksize": 25, 
+                    "table_size": 2e9,
+                    "n_tables": 4,
+                    "coverage": 10
+                }, 
+
+                "pooled": { 
+                    "ksize": 25,
+                    "table_size": 4e9,
+                    "n_tables": 4,
+                    "coverage": 20 
+                }
+            }
+        },
+
+		"pbs-params": {
+			"email": "camille.scott.w@gmail.com",
+			"account": "ged"
+		},
+
+        "velvet": {
+			"template_file": "velvet.tpl",
+			"script_file": "velvet.sh",
+            "time": "72:00:00",
+            "n_threads": 16,
+            "mem": "1000gb",
+			"k_start": 23,
+            "k_end": 43,
+            "k_step": 4,
+            "min_contig_lgth": 300,
+            "cov_cutoff": 8,
+            "exp_cov": 18,
+            "ins_length": 300,
+            "max_gap_count": 7,
+            "min_pair_count": 7,
+            "directory": "2015-fish-dna-velvet"
+        },
+
+        "abyss": {
+            "template_file": "abyss.tpl",
+            "script_file": "abyss.sh",
+            "time": "72:00:00",
+            "n_threads": 32,
+            "mem": "512gb",
+            "k": 25,
+            "name": "2015-fish-dna-abyss"
+        }
+    }
+}

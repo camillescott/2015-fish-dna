@@ -1,0 +1,29 @@
+{
+	"Fish_102_S1_L001_R1": {
+		"fragment": "left",
+		"sample": "Fish102_S1_L001",
+		"meta_type": "sample",
+		"filename": "Fish102_S1_L001_R1_001.fastq.gz"
+	},
+
+	"Fish_102_S1_L001_R2": {
+		"fragment": "right",
+		"sample": "Fish102_S1_L001",
+		"meta_type": "sample",
+		"filename": "Fish102_S1_L001_R2_001.fastq.gz"
+	},
+
+	"Checkmate_NoIndex_L007_R1": {
+		"fragment": "left",
+		"sample": "Checkmate_NoIndex_L007",
+		"meta_type": "sample",
+		"filename": "Checkmate_NoIndex_L007_R1_001.fastq.gz"
+	},
+
+	"Checkmate_NoIndex_L007_R3": {
+		"fragment": "right",
+		"sample": "Checkmate_NoIndex_L007",
+		"meta_type": "sample",
+		"filename": "Checkmate_NoIndex_L007_R3_001.fastq.gz"
+	}
+}

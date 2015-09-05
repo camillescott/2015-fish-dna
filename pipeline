@@ -1,0 +1,129 @@
+#!/usr/bin/env python
+from __future__ import print_function
+
+import argparse
+import os
+import sys
+import json
+import pprint
+import time
+
+from tasks import *
+
+from doit.cmd_base import TaskLoader
+from doit.doit_cmd import DoitMain
+
+def run_tasks(tasks, args, config={'verbosity': 2}):
+    
+    if type(tasks) is not list:
+        raise TypeError('tasks must be a list')
+   
+    class Loader(TaskLoader):
+        @staticmethod
+        def load_tasks(cmd, opt_values, pos_args):
+            return tasks, config
+   
+    DoitMain(Loader()).run(args)
+
+CUR_TIME = time.strftime('%Y-%m-%d-%H%M')
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--resources', default='resources.json')
+    parser.add_argument('--config', default='config.json')
+    parser.add_argument('--print-tasks', action='store_true', default=False)
+    parser.add_argument('--local-file-dir', default='_data')
+    args, doit_args = parser.parse_known_args()
+
+    with open(args.resources, 'r') as fp:
+        print('** Using data resources found in {c}'.format(c=args.resources), file=sys.stderr)
+        resources = json.load(fp)
+    with open(args.config, 'r') as fp:
+        print('** Using config found in {c}'.format(c=args.config), file=sys.stderr)
+        config = json.load(fp)
+
+    desc = '''
+####################################################################
+
+ 2015 Fish DNA assembly Pipeline
+
+ * Authors:
+   {authors}
+
+ * About:
+   {desc}
+
+####################################################################
+'''.format(authors=', '.join(config['meta']['authors']),
+           desc=config['meta']['description'])
+    print(desc, file=sys.stderr)
+
+    local_dir = os.path.abspath(args.local_file_dir)
+    work_dir = config['pipeline']['work_dir']
+
+    resources_df = pd.DataFrame(resources).transpose()
+
+    old_dir = os.getcwd()
+    try:
+        if not os.path.exists(work_dir):
+            os.makedirs(work_dir)
+        os.chdir(work_dir)
+        print('** Current Working Directory: {w}'.format(w=os.getcwd()), file=sys.stderr)
+
+        tasks = []
+
+        for key, row in resources_df[resources_df.meta_type == 'sample'].iterrows():
+            # Link the sample files into the working directory
+            tasks.append(link_file_task(os.path.join(local_dir, row.filename)))
+
+        qc_files = []
+        trim_cfg = config['pipeline']['trimmomatic']
+        for sample, sample_group in resources_df.groupby('sample'):
+            s = sample_group.pivot('sample', 'fragment', 'filename')
+            left = s.left[0]
+            right = s.right[0]
+            tasks.append(trimmomatic_pe_task(left, right, left + '.paired', left + '.unpaired', 
+                                             right + '.paired', right + '.unpaired',
+                                             'phred33', trim_cfg))
+            tasks.append(interleave_task(left + '.paired', right + '.paired', sample + '.qc'))
+            qc_files.append(sample + '.qc')
+
+        # Run diginorm seperately on each sample
+        dg_single_config = config['pipeline']['khmer']['normalization']['single']
+        for qc_file in qc_files:
+            tasks.append(diginorm_task([qc_file], dg_single_config, qc_file))
+
+        # Now run pooled on all samples
+        dg_files = [fn+'.keep' for fn in qc_files]
+        dg_pooled_config = config['pipeline']['khmer']['normalization']['pooled']
+        ct_fn = config['pipeline']['prefix'] + '.pooled.ct'
+        dg_pooled_label = config['pipeline']['prefix'] + '_pooled'
+        dg_task = diginorm_task(dg_files, dg_pooled_config, dg_pooled_label, ct_outfn=ct_fn)
+        tasks.append(dg_task)
+        final_files = [fn+'.keep' for fn in dg_files]
+
+        velvet_template = os.path.join(old_dir, config['pipeline']['velvet']['template_file'])
+        print (velvet_template)
+        tasks.append(build_velvet_task(final_files, velvet_template, CUR_TIME,
+                                       config['pipeline']['velvet'],
+                                       config['pipeline']['pbs-params'], 
+                                       label='velvet_' + config['pipeline']['prefix']))
+
+        #abyss_files = [fn + '.abyss.fq' for fn in dg_files]
+        #for infn, outfn in zip(dg_files, abyss_files):
+        #    tasks.append(format_abyss_task(infn, outfn))
+
+        #tasks.append(submit_abyss_task(abyss_files, config['pipeline']['abyss'],
+        #             config['pipeline']['pbs-params'], label='abyss-' + config['pipeline']['prefix']))
+
+        if args.print_tasks:
+            for task in tasks:
+                print('-----\n', task)
+                pprint.pprint(task.__dict__)
+
+        run_tasks(tasks, doit_args)
+
+    finally:
+        os.chdir(old_dir)
+
+main()
