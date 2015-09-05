@@ -39,6 +39,27 @@ def create_task_object(task_dict_func):
     return d_to_t
 
 @create_task_object
+def kmergenie_task(sample_list, kmergenie_cfg):
+    
+    prefix = kmergenie_cfg['prefix']
+    params = kmergenie_cfg['params']
+    sample_file = '.'.join([prefix, 'samples', 'txt'])
+
+    def mksample_file():
+        with open(sample_file, 'wb') as fp:
+            for sample in sample_list:
+                fp.write(sample + '\n')
+
+    cmd = 'kmergenie {sample_file} {params} -o {prefix}'.format(**locals())
+
+    return {'name': 'kmergenie_' + prefix,
+            'title': title_with_actions,
+            'actions': [(mksample_file, []), cmd],
+            'file_dep': sample_list,
+            'targets': [sample_file],
+            'clean': [clean_targets]}
+
+@create_task_object
 def build_velvet_task(file_list, template_fn, cur_time, velvet_cfg, pbs_cfg, label=''):
 
     if not label:

@@ -33,6 +33,11 @@
             }
         },
 
+        "kmergenie": {
+            "params": "--diploid",
+            "prefix": "fish.histograms"
+        },
+
 		"pbs-params": {
 			"email": "camille.scott.w@gmail.com",
 			"account": "ged"

@@ -71,10 +71,15 @@ def main():
         print('** Current Working Directory: {w}'.format(w=os.getcwd()), file=sys.stderr)
 
         tasks = []
-
-        for key, row in resources_df[resources_df.meta_type == 'sample'].iterrows():
+        sample_df = resources_df[resources_df.meta_type == 'sample']
+        for key, row in sample_df.iterrows():
             # Link the sample files into the working directory
             tasks.append(link_file_task(os.path.join(local_dir, row.filename)))
+        
+        kmgenie_cfg = config['pipeline']['kmergenie']
+        kmgenie_task = kmergenie_task([fn for fn in sample_df.filename], kmgenie_cfg)
+        tasks.append(kmgenie_task)
+        tasks.append(group_task('kmergenie', [kmgenie_task.name]))
 
         qc_files = []
         trim_cfg = config['pipeline']['trimmomatic']
