@@ -360,7 +360,7 @@ def interleave_task(left_in, right_in, out_fn, label=''):
     if not label:
         label = 'interleave_' + out_fn
 
-    cmd = 'interleave-reads.py {left_in} {right_in} -o {out_fn}'.format(**locals())
+    cmd = 'interleave-reads.py --no-reformat {left_in} {right_in} -o {out_fn}'.format(**locals())
 
     return {'title': title_with_actions,
             'name': label,
