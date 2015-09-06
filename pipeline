@@ -81,6 +81,13 @@ def main():
         tasks.append(kmgenie_task)
         tasks.append(group_task('kmergenie', [kmgenie_task.name]))
 
+        fastqc_tasks = []
+        fastqc_cfg = config['pipeline']['fastqc']
+        for key, row in sample_df.iterrows():
+            fastqc_tasks.append(fastqc_task(row.filename, fastqc_cfg))
+        tasks.extend(fastqc_tasks)
+        tasks.append(group_task('fastqc-raw', [t.name for t in fastqc_tasks]))
+
         qc_files = []
         trim_cfg = config['pipeline']['trimmomatic']
         for sample, sample_group in resources_df.groupby('sample'):

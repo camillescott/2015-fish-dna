@@ -60,6 +60,20 @@ def kmergenie_task(sample_list, kmergenie_cfg):
             'clean': [clean_targets]}
 
 @create_task_object
+def fastqc_task(sample_fn, fastqc_cfg):
+
+    n_threads = fastqc_cfg['n_threads']
+
+    cmd = 'fastqc -t {n_threads} {sample_fn}'.format(**locals())
+
+    return {'name': 'fastqc_' + sample_fn,
+            'title': title_with_actions,
+            'actions': [cmd],
+            'file_dep': [sample_fn],
+            'uptodate': [run_once],
+            'clean': [clean_targets]}
+
+@create_task_object
 def build_velvet_task(file_list, template_fn, cur_time, velvet_cfg, pbs_cfg, label=''):
 
     if not label:

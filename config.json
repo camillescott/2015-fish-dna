@@ -38,6 +38,10 @@
             "prefix": "fish.histograms"
         },
 
+        "fastqc": {
+            "n_threads": 2
+        },
+
 		"pbs-params": {
 			"email": "camille.scott.w@gmail.com",
 			"account": "ged"
