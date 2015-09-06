@@ -76,10 +76,6 @@ def main():
             # Link the sample files into the working directory
             tasks.append(link_file_task(os.path.join(local_dir, row.filename)))
         
-        kmgenie_cfg = config['pipeline']['kmergenie']
-        kmgenie_task = kmergenie_task([fn for fn in sample_df.filename], kmgenie_cfg)
-        tasks.append(kmgenie_task)
-        tasks.append(group_task('kmergenie', [kmgenie_task.name]))
 
         fastqc_tasks = []
         fastqc_cfg = config['pipeline']['fastqc']
@@ -90,12 +86,14 @@ def main():
 
         qc_files = []
         trim_cfg = config['pipeline']['trimmomatic']
+        adapter_row = resources_df.ix['adapters']
+        tasks.append(download_and_gunzip_task(adapter_row.url, adapter_row.filename))
         for sample, sample_group in resources_df.groupby('sample'):
             s = sample_group.pivot('sample', 'fragment', 'filename')
             left = s.left[0]
             right = s.right[0]
             tasks.append(trimmomatic_pe_task(left, right, left + '.paired', left + '.unpaired', 
-                                             right + '.paired', right + '.unpaired',
+                                             right + '.paired', right + '.unpaired', adapter_row.filename,
                                              'phred33', trim_cfg))
             tasks.append(interleave_task(left + '.paired', right + '.paired', sample + '.qc'))
             qc_files.append(sample + '.qc')
@@ -114,8 +112,18 @@ def main():
         tasks.append(dg_task)
         final_files = [fn+'.keep' for fn in dg_files]
 
+        kmgenie_cfg = config['pipeline']['kmergenie']
+        kmgenie_task = kmergenie_task(final_files, kmgenie_cfg)
+        tasks.append(kmgenie_task)
+        tasks.append(group_task('kmergenie', [kmgenie_task.name]))
+
+        fastqc_final_tasks = []
+        for fn in final_files:
+            fastqc_final_tasks.append(fastqc_task(fn, fastqc_cfg))
+        tasks.extend(fastqc_final_tasks)
+        tasks.append(group_task('fastqc-final', [t.name for t in fastqc_final_tasks]))
+
         velvet_template = os.path.join(old_dir, config['pipeline']['velvet']['template_file'])
-        print (velvet_template)
         tasks.append(build_velvet_task(final_files, velvet_template, CUR_TIME,
                                        config['pipeline']['velvet'],
                                        config['pipeline']['pbs-params'], 

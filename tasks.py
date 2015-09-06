@@ -320,37 +320,37 @@ def bowtie2_align_task(db_basename, target_fn, bowtie2_cfg, left_fn='', right_fn
             'clean': [clean_targets] }
 @create_task_object
 def trimmomatic_pe_task(left_in, right_in, left_paired_out, left_unpaired_out, 
-                     right_paired_out, right_unpaired_out, encoding, trim_cfg):
+                     right_paired_out, right_unpaired_out, adapter_fn, encoding, trim_cfg):
 
     assert encoding in ['phred33', 'phred64']
     name = 'TrimmomaticPE_' + left_in + '_' + right_in
 
     params = trim_cfg['params']
     n_threads = trim_cfg['n_threads']
-    cmd = 'TrimmomaticPE -{encoding} -threads {n_threads} {left_in} {right_in} {left_paired_out} {left_unpaired_out} '\
-          '{right_paired_out} {right_unpaired_out} {params}'.format(**locals())
+    cmd = 'java -jar $TRIM/trimmomatic PE -{encoding} -threads {n_threads} {left_in} {right_in} {left_paired_out} {left_unpaired_out} '\
+            '{right_paired_out} {right_unpaired_out} ILLUMINACLIP:{adapter_fn}:2:30:10 {params}'.format(**locals())
 
     return {'title': title_with_actions,
             'name': name,
             'actions': [cmd],
-            'file_dep': [left_in, right_in],
+            'file_dep': [left_in, right_in, adapter_fn],
             'targets': [left_paired_out, left_unpaired_out, right_paired_out, right_unpaired_out],
             'clean': [clean_targets]}
 
 @create_task_object
-def trimmomatic_se_task(sample_fn, output_fn, encoding, trim_cfg):
+def trimmomatic_se_task(sample_fn, output_fn, adapter_fn, encoding, trim_cfg):
     assert encoding in ['phred33', 'phred64']
     name = 'TrimmomaticSE_' + sample_fn
 
     params = trim_cfg['params']
     n_threads = trim_cfg['n_threads']
-    cmd = 'TrimmomaticSE -{encoding} -threads {n_threads} {sample_fn} '\
-          '{output_fn} {params}'.format(**locals())
+    cmd = 'java -jar $TRIM/trimmomatic SE -{encoding} -threads {n_threads} {sample_fn} '\
+          '{output_fn} ILLUMINACLIP:{adapter_fn}:2:30:10 {params}'.format(**locals())
 
     return {'title': title_with_actions,
             'name': name,
             'actions': [cmd],
-            'file_dep': [sample_fn],
+            'file_dep': [sample_fn, adapter_fn],
             'targets': [output_fn],
             'clean': [clean_targets]}
 
