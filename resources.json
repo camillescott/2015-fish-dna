@@ -25,5 +25,12 @@
 		"sample": "Checkmate_NoIndex_L007",
 		"meta_type": "sample",
 		"filename": "Checkmate_NoIndex_L007_R3_001.fastq.gz"
+	},
+
+	"adapters": {
+		"meta_type": "fasta_database",
+		"filename": "adapters.fa",
+		"access": "remote_file",
+		"url": "http://edhar.genomecenter.ucdavis.edu/~camille/fish/adapters.fa.gz"
 	}
 }

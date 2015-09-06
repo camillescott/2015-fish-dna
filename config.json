@@ -39,7 +39,7 @@
         },
 
         "fastqc": {
-            "n_threads": 2
+            "n_threads": 4
         },
 
 		"pbs-params": {
@@ -52,7 +52,7 @@
 			"script_file": "velvet.sh",
             "time": "72:00:00",
             "n_threads": 16,
-            "mem": "1000gb",
+            "mem": "750gb",
 			"k_start": 23,
             "k_end": 43,
             "k_step": 4,
