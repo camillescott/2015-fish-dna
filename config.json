@@ -28,7 +28,7 @@
                     "ksize": 25,
                     "table_size": 4e9,
                     "n_tables": 4,
-                    "coverage": 20 
+                    "coverage": 10 
                 }
             }
         },
