@@ -38,6 +38,12 @@ def create_task_object(task_dict_func):
         return dict_to_task(ret_dict)
     return d_to_t
 
+def create_folder_task(folder):
+
+    return {'name': 'create_folder_' + folder,
+            'title': title_with_actions,
+            'actions': [(create_folder, [folder])]}
+
 @create_task_object
 def kmergenie_task(sample_list, kmergenie_cfg):
     
@@ -184,6 +190,19 @@ def diginorm_task(input_files, dg_cfg, label, ct_outfn=None):
             'file_dep': input_files,
             'targets': targets,
             'clean': [clean_targets]}
+
+@create_task_object
+def download_task(url, target_fn, label='default'):
+
+    cmd = 'curl -o {target_fn} {url}'.format(**locals())
+    name = '_'.join(['download_gunzip', target_fn, label])
+
+    return {'title': title_with_actions,
+            'name': name,
+            'actions': [cmd],
+            'targets': [target_fn],
+            'clean': [clean_targets],
+            'uptodate': [run_once]}
 
 @create_task_object
 def download_and_gunzip_task(url, target_fn, label=''):

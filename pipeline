@@ -32,7 +32,8 @@ def main():
     parser.add_argument('--resources', default='resources.json')
     parser.add_argument('--config', default='config.json')
     parser.add_argument('--print-tasks', action='store_true', default=False)
-    parser.add_argument('--local-file-dir', default='_data')
+    parser.add_argument('--data-dir', default='_data')
+    parser.add_argument('--work-dir', default='_work')
     args, doit_args = parser.parse_known_args()
 
     with open(args.resources, 'r') as fp:
@@ -58,8 +59,8 @@ def main():
            desc=config['meta']['description'])
     print(desc, file=sys.stderr)
 
-    local_dir = os.path.abspath(args.local_file_dir)
-    work_dir = config['pipeline']['work_dir']
+    data_dir = os.path.abspath(args.data_dir)
+    work_dir = os.path.abspath(args.work_dir)
 
     resources_df = pd.DataFrame(resources).transpose()
 
@@ -71,12 +72,17 @@ def main():
         print('** Current Working Directory: {w}'.format(w=os.getcwd()), file=sys.stderr)
 
         tasks = []
+
+        # Download the samples. Might take a loooooooong time!
+        tasks.append(create_folder_task(args.data_dir))
         sample_df = resources_df[resources_df.meta_type == 'sample']
         for key, row in sample_df.iterrows():
-            # Link the sample files into the working directory
-            tasks.append(link_file_task(os.path.join(local_dir, row.filename)))
-        
+            tasks.append(download_task(row.url, os.path.join(data_dir, row.filename)))
 
+        # Link samples into the working dir
+        for key, row in sample_df.iterrows():
+            tasks.append(link_file_task(os.path.join(data_dir, row.filename)))
+        
         fastqc_tasks = []
         fastqc_cfg = config['pipeline']['fastqc']
         for key, row in sample_df.iterrows():
@@ -111,12 +117,12 @@ def main():
         dg_task = diginorm_task(dg_files, dg_pooled_config, dg_pooled_label, ct_outfn=ct_fn)
         tasks.append(dg_task)
         final_files = [fn+'.keep' for fn in dg_files]
-
+        '''
         kmgenie_cfg = config['pipeline']['kmergenie']
         kmgenie_task = kmergenie_task(final_files, kmgenie_cfg)
         tasks.append(kmgenie_task)
         tasks.append(group_task('kmergenie', [kmgenie_task.name]))
-
+        '''
         fastqc_final_tasks = []
         for fn in final_files:
             fastqc_final_tasks.append(fastqc_task(fn, fastqc_cfg))

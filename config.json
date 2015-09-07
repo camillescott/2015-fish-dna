@@ -8,7 +8,6 @@
 
     "pipeline": {
         "prefix": "fish",
-        "work_dir": "_work",
         
         "trimmomatic": { 
             "n_threads": 4,
