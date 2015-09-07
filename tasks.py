@@ -327,7 +327,7 @@ def trimmomatic_pe_task(left_in, right_in, left_paired_out, left_unpaired_out,
 
     params = trim_cfg['params']
     n_threads = trim_cfg['n_threads']
-    cmd = 'java -jar $TRIM/trimmomatic PE -{encoding} -threads {n_threads} {left_in} {right_in} {left_paired_out} {left_unpaired_out} '\
+    cmd = 'java -jar $TRIM/trimmomatic-0.33.jar PE -{encoding} -threads {n_threads} {left_in} {right_in} {left_paired_out} {left_unpaired_out} '\
             '{right_paired_out} {right_unpaired_out} ILLUMINACLIP:{adapter_fn}:2:30:10 {params}'.format(**locals())
 
     return {'title': title_with_actions,
@@ -344,7 +344,7 @@ def trimmomatic_se_task(sample_fn, output_fn, adapter_fn, encoding, trim_cfg):
 
     params = trim_cfg['params']
     n_threads = trim_cfg['n_threads']
-    cmd = 'java -jar $TRIM/trimmomatic SE -{encoding} -threads {n_threads} {sample_fn} '\
+    cmd = 'java -jar $TRIM/trimmomatic-0.33.jar SE -{encoding} -threads {n_threads} {sample_fn} '\
           '{output_fn} ILLUMINACLIP:{adapter_fn}:2:30:10 {params}'.format(**locals())
 
     return {'title': title_with_actions,
