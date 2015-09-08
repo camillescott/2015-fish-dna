@@ -31,7 +31,7 @@ for evaluating short-read sample quality:
 
 	sudo apt-get install fastqc
 
-Install [http://www.usadellab.org/cms/?page=trimmomatic](http://www.usadellab.org/cms/?page=trimmomatic). Trimmomatic is available in Ubuntu PPAs, but many HPC environments install it
+Install [Trimmomatic](http://www.usadellab.org/cms/?page=trimmomatic). Trimmomatic is available in Ubuntu PPAs, but many HPC environments install it
 in a non-standard way. So, we will install it manually. First, download the archive and unpack
 it:
 
@@ -68,6 +68,17 @@ Install [velvet](https://www.ebi.ac.uk/~zerbino/velvet/) assembler:
 
 ### Running the Pipeline
 
-There are two main scripts: `get_data`, which will download the FASTQ files, and `pipeline`,
-which runs all the processing. The two are separate due to the sheer size of the files, which
-may take a very long time to download, depending on your internet connection.
+Execution is managed with the *awesome* pydoit library. To launch with test data, use:
+
+    ./pipeline -n 4 --resources test/resources.json --config test/config.json --work-dir _test/
+
+Where `-n 4` is the number of tasks to run in parallel. To run the main pipeline:
+
+	./pipeline -n 4
+
+ie, the default paramaters run the main pipeline. This downloads the samples from a remote server -- they are big! So, it may take a while.
+Assuming you have all the dependencies installed correctly, when it is finished, you should find a file named {DATE-TIME}-velvet.sh, which
+is a PBS script for submitting the velvet job. You can also edit this and remove all the #PBS directives and the module loading to run it
+as a normal shell script. Otherwise, submit it with:
+
+    qsub {DATE-TIME}-velvet.sh
