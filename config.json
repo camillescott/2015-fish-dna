@@ -29,6 +29,12 @@
                     "n_tables": 4,
                     "coverage": 10 
                 }
+            },
+
+            "counting": {
+                "ksize": 25,
+                "table_size": 2e9,
+                "n_tables": 4
             }
         },
 

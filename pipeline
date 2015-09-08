@@ -118,6 +118,9 @@ def main():
         dg_task = diginorm_task(dg_files, dg_pooled_config, dg_pooled_label, ct_outfn=ct_fn)
         tasks.append(dg_task)
         final_files = [fn+'.keep' for fn in dg_files]
+
+        tasks.append(abundance_dist_task(final_files, ct_fn, ct_fn + '.hist'))
+
         '''
         kmgenie_cfg = config['pipeline']['kmergenie']
         kmgenie_task = kmergenie_task(final_files, kmgenie_cfg)
