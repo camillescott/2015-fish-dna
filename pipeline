@@ -122,12 +122,11 @@ def main():
         for fn in final_files:
             tasks.append(abundance_dist_task(fn, ct_fn, fn + '.hist'))
 
-        '''
         kmgenie_cfg = config['pipeline']['kmergenie']
         kmgenie_task = kmergenie_task(final_files, kmgenie_cfg)
         tasks.append(kmgenie_task)
         tasks.append(group_task('kmergenie', [kmgenie_task.name]))
-        '''
+        
         fastqc_final_tasks = []
         for fn in final_files:
             fastqc_final_tasks.append(fastqc_task(fn, fastqc_cfg))
