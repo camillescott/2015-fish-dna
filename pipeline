@@ -119,7 +119,8 @@ def main():
         tasks.append(dg_task)
         final_files = [fn+'.keep' for fn in dg_files]
 
-        tasks.append(abundance_dist_task(final_files, ct_fn, ct_fn + '.hist'))
+        for fn in final_files:
+            tasks.append(abundance_dist_task(fn, ct_fn, fn + '.hist'))
 
         '''
         kmgenie_cfg = config['pipeline']['kmergenie']

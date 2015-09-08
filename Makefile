@@ -1,4 +1,4 @@
 test: FORCE
-	./pipeline run --resources test/resources.json --config test/config.json --local-file-dir test/
+	./pipeline -n 4 --resources test/resources.json --config test/config.json --work-dir _test/
 
 FORCE:

@@ -192,35 +192,33 @@ def diginorm_task(input_files, dg_cfg, label, ct_outfn=None):
             'clean': [clean_targets]}
 
 @create_task_object
-def load_counting_task(input_files, table_fn, counting_cfg, label):
+def load_counting_task(input_fn, table_fn, counting_cfg, label):
 
     name = 'load_into_counting_' + table_fn + '_' + label
 
     table_size = counting_cfg['table_size']
     n_tables = counting_cfg['n_tables']
     ksize = counting_cfg['ksize']
-    inputs = ' '.join(input_files)
 
-    cmd = 'load-into-counting.py -x {table_size} -N {n_tables} -k {ksize} {table_fn} {inputs}'.format(**locals())
+    cmd = 'load-into-counting.py -x {table_size} -N {n_tables} -k {ksize} {table_fn} {input_fn}'.format(**locals())
 
     return {'name': name,
             'title': title_with_actions,
             'actions': [cmd],
-            'file_dep': input_files,
+            'file_dep': [input_fn],
             'targets': [table_fn],
             'clean': [clean_targets]}
 
 @create_task_object
-def abundance_dist_task(input_files, table_fn, hist_fn):
+def abundance_dist_task(input_fn, table_fn, hist_fn):
 
     name = 'abundance_dist_' + hist_fn
-    inputs = ' '.join(input_files)
-    cmd = 'abundance-dist.py {table_fn} {inputs} {hist_fn}'.format(**locals())
+    cmd = 'abundance-dist.py {table_fn} {input_fn} {hist_fn}'.format(**locals())
 
     return {'name': name,
-            'title': tile_with_actions,
+            'title': title_with_actions,
             'actions': [cmd],
-            'file_dep': input_files + [table_fn],
+            'file_dep': [input_fn, table_fn],
             'targets': [hist_fn],
             'clean': [clean_targets]}
 
