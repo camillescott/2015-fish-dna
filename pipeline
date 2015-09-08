@@ -70,6 +70,7 @@ def main():
             os.makedirs(work_dir)
         os.chdir(work_dir)
         print('** Current Working Directory: {w}'.format(w=os.getcwd()), file=sys.stderr)
+        print('** Current Data Directory: {d}\n'.format(d=data_dir), file=sys.stderr)
 
         tasks = []
 

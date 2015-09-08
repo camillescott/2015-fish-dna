@@ -1,30 +1,38 @@
 {
 	"Fish_102_S1_L001_R1": {
+		"access": "remote_file",
 		"fragment": "left",
 		"sample": "Fish102_S1_L001",
 		"meta_type": "sample",
-		"filename": "Fish102_S1_L001_R1_001.fastq.gz"
+		"filename": "Fish102_S1_L001_R1_001.fastq.gz",
+		"url": "http://edhar.genomecenter.ucdavis.edu/~camille/fish/Fish102_S1_L001_R1_001.fastq.gz"
 	},
 
 	"Fish_102_S1_L001_R2": {
+		"access": "remote_file",
 		"fragment": "right",
 		"sample": "Fish102_S1_L001",
 		"meta_type": "sample",
-		"filename": "Fish102_S1_L001_R2_001.fastq.gz"
+		"filename": "Fish102_S1_L001_R2_001.fastq.gz",
+		"url": "http://edhar.genomecenter.ucdavis.edu/~russell/fish/bigrun/Fish102_S1_L001_R2_001.fastq.gz"
 	},
 
 	"Checkmate_NoIndex_L007_R1": {
+		"access": "remote_file",
 		"fragment": "left",
 		"sample": "Checkmate_NoIndex_L007",
 		"meta_type": "sample",
-		"filename": "Checkmate_NoIndex_L007_R1_001.fastq.gz"
+		"filename": "Checkmate_NoIndex_L007_R1_001.fastq.gz",
+		"url": "http://edhar.genomecenter.ucdavis.edu/~russell/fish/biggerrun/Checkmate_NoIndex_L007_R1_001.fastq.gz"
 	},
 
 	"Checkmate_NoIndex_L007_R3": {
+		"access": "remote_file",
 		"fragment": "right",
 		"sample": "Checkmate_NoIndex_L007",
 		"meta_type": "sample",
-		"filename": "Checkmate_NoIndex_L007_R3_001.fastq.gz"
+		"filename": "Checkmate_NoIndex_L007_R3_001.fastq.gz",
+		"url": "http://edhar.genomecenter.ucdavis.edu/~russell/fish/biggerrun/Checkmate_NoIndex_L007_R3_001.fastq.gz"
 	},
 
 	"adapters": {

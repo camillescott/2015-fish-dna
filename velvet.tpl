@@ -14,7 +14,9 @@
 #PBS -M {{email}}
 {% endif %}
 
-cd $PBS_O_WORKDIR
+if [ -z "$PBS_O_WORKDIR"]; then
+	cd $PBS_O_WORKDIR
+fi
 
 module load velvet
 
