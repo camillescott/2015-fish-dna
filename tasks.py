@@ -49,6 +49,7 @@ def kmergenie_task(sample_list, kmergenie_cfg):
     
     prefix = kmergenie_cfg['prefix']
     params = kmergenie_cfg['params']
+    n_threads = kmergenie_cfg['n_threads']
     sample_file = '.'.join([prefix, 'samples', 'txt'])
 
     def mksample_file():
@@ -56,7 +57,7 @@ def kmergenie_task(sample_list, kmergenie_cfg):
             for sample in sample_list:
                 fp.write(sample + '\n')
 
-    cmd = 'kmergenie {sample_file} {params} -o {prefix}'.format(**locals())
+    cmd = 'kmergenie {sample_file} {params} -o {prefix} -t {n_threads}'.format(**locals())
 
     return {'name': 'kmergenie_' + prefix,
             'title': title_with_actions,
