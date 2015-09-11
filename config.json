@@ -27,7 +27,7 @@
                     "ksize": 25,
                     "table_size": 4e9,
                     "n_tables": 4,
-                    "coverage": 10 
+                    "coverage": 8 
                 }
             },
 
@@ -56,19 +56,17 @@
         "velvet": {
 			"template_file": "velvet.tpl",
 			"script_file": "velvet.sh",
-            "time": "72:00:00",
-            "n_threads": 16,
-            "mem": "750gb",
-			"k_start": 23,
-            "k_end": 43,
-            "k_step": 4,
+            "time": "120:00:00",
+            "n_threads": 32,
+            "mem": "1500gb",
+			"k": 25,
             "min_contig_lgth": 300,
-            "cov_cutoff": 8,
-            "exp_cov": 18,
+            "cov_cutoff": 4,
+            "exp_cov": "auto",
             "ins_length": 300,
-            "max_gap_count": 7,
-            "min_pair_count": 7,
-            "directory": "2015-fish-dna-velvet"
+            "max_gap_count": 3,
+            "min_pair_count": 5,
+            "directory": "fish-dna-velvet"
         },
 
         "abyss": {
