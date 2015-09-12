@@ -59,7 +59,7 @@
             "time": "120:00:00",
             "n_threads": 32,
             "mem": "1500gb",
-			"k": 25,
+			"k": 45,
             "min_contig_lgth": 300,
             "cov_cutoff": 4,
             "exp_cov": "auto",

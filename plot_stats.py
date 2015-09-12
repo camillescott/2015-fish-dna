@@ -4,6 +4,7 @@ import matplotlib as mpl
 mpl.use('Agg')
 from matplotlib import pyplot as plt
 import pandas as pd
+from scipy import stats
 import seaborn as sns
 
 from figmanager import FigManager
@@ -22,21 +23,21 @@ sns.set(style="ticks", palette="Paired", rc=mpl_params)
 def main():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', '--hist-file')
+    parser.add_argument('-i', '--stats-file')
     parser.add_argument('-o', '--output-prefix')
     parser.add_argument('--format', nargs='+', default=['pdf'])
-    parser.add_argument('--title', default='Coverage Histogram')
+    parser.add_argument('--title')
     args = parser.parse_args()
 
-    df = pd.read_csv(args.hist_file)
+    df = pd.read_csv(args.stats_file, delimiter='\t')
     if not args.output_prefix:
-        args.output_prefix = os.path.basename(args.hist_file)
+        args.output_prefix = os.path.basename(args.stats_file)
 
     with FigManager(show=False, save=args.output_prefix, exts=args.format) as (fig, ax):
-        ax.plot(df['abundance'], df['count'])
-        ax.set_title(args.title)
-        ax.set_ylabel('Count')
-        ax.set_xlabel('Abundance')
+        sns.distplot(df['short1_cov'], weights=df['lgth'], bins=50, kde=False)
+        #ax.set_title(args.title)
+        #ax.set_ylabel('Count')
+        #ax.set_xlabel('Abundance')
 
 if __name__ == '__main__':
     main()
