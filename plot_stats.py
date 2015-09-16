@@ -26,18 +26,23 @@ def main():
     parser.add_argument('-i', '--stats-file')
     parser.add_argument('-o', '--output-prefix')
     parser.add_argument('--format', nargs='+', default=['pdf'])
-    parser.add_argument('--title')
     args = parser.parse_args()
 
     df = pd.read_csv(args.stats_file, delimiter='\t')
     if not args.output_prefix:
-        args.output_prefix = os.path.basename(args.stats_file)
+        args.output_prefix = os.path.basename(os.path.dirname(args.stats_file).strip('/'))
 
-    with FigManager(show=False, save=args.output_prefix, exts=args.format) as (fig, ax):
-        sns.distplot(df['short1_cov'], weights=df['lgth'], bins=50, kde=False)
-        #ax.set_title(args.title)
-        #ax.set_ylabel('Count')
-        #ax.set_xlabel('Abundance')
+    with FigManager(show=False, save=args.output_prefix + '.cov', exts=args.format) as (fig, ax):
+        sns.distplot(df[df['short1_cov'] > 0]['short1_cov'], bins=50, kde=False)
+        ax.set_title('{t} k-mer Coverage Histogram'.format(t=args.output_prefix))
+        ax.set_ylabel('Count')
+        ax.set_xlabel('k-mer Abundance')
+
+    with FigManager(show=False, save=args.output_prefix + '.lgth', exts=args.format) as (fig, ax):
+        sns.distplot(df[df['lgth'] > 0]['lgth'], bins=50, kde=False)
+        ax.set_title('{t} k-mer Coverage Histogram'.format(t=args.output_prefix))
+        ax.set_ylabel('Count')
+        ax.set_xlabel('Length')
 
 if __name__ == '__main__':
     main()
