@@ -221,20 +221,39 @@ def diginorm_task(input_files, dg_cfg, label, ct_outfn=None):
             'targets': targets,
             'clean': [clean_targets]}
 
-'''
 @create_task_object
-def chained_diginorm_task(input_files, dg_cfg, label, ct_outfn):
+def chained_twopass_diginorm_task(input_files, dg_cfg, label, ct_outfn):
 
     ksize = dg_cfg['ksize']
     table_size = dg_cfg['table_size']
     n_tables = dg_cfg['n_tables']
     coverage = dg_cfg['coverage']
 
-    name = 'normalize_by_median_chained_' + label
-    cmd = []
-    for n, fn in enumerate(input_files):
-'''
+    name = 'normalize_by_median_twopass_chained_' + label
+    inputs = ' '.join(input_files)
+    suffix = '.C{c}'.format(c=coverage)
 
+    cmd_list = []
+    targets = []
+    for n, fn in enumerate(input_files + [fn + suffix for fn in input_files]):
+        out_fn = fn + suffix
+        report_fn = out_fn + '.report.txt'
+        cmd = 'normalize-by-median.py -f -k {ksize} -x {table_size} -N {n_tables} '\
+              '-C {coverage} -R {report_fn} -o {out_fn} -s {ct_outfn} '.format(**locals())
+        if n > 0:
+            cmd += '-l {ct_outfn} '.format(**locals())
+        cmd += inputs
+        cmd_list.append(cmd)
+
+        if n >= len(input_files):
+            targets.append(out_fn)
+
+    return {'title': title_with_actions,
+            'name': name,
+            'actions': cmd_list,
+            'file_dep': input_files,
+            'targets': targets,
+            'clean': [clean_targets]}
 
 @create_task_object
 def load_counting_task(file_list, table_fn, counting_cfg, label):

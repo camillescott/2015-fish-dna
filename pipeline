@@ -110,19 +110,15 @@ def main():
         tasks.append(load_counting_task(qc_files, raw_ct_fn, counting_cfg, 'raw-fish'))
 
 
-        # Run diginorm seperately on each sample
-        dg_single_config = config['pipeline']['khmer']['normalization']['single']
-        for qc_file in qc_files:
-            tasks.append(diginorm_task([qc_file], dg_single_config, qc_file))
-
-        # Now run pooled on all samples
-        dg_files = [fn+'.keep' for fn in qc_files]
-        dg_pooled_config = config['pipeline']['khmer']['normalization']['pooled']
-        ct_fn = config['pipeline']['prefix'] + '.pooled.ct'
-        dg_pooled_label = config['pipeline']['prefix'] + '_pooled'
-        dg_task = diginorm_task(dg_files, dg_pooled_config, dg_pooled_label, ct_outfn=ct_fn)
+        # Run two-pass chained diginorm on the samples
+        dg_config = config['pipeline']['khmer']['normalization']
+        ct_fn = config['pipeline']['prefix'] + '.2pc.ct'
+        dg_task = chained_twopass_diginorm_task(qc_files,
+                                                dg_config, 
+                                                'fish',
+                                                ct_fn)
         tasks.append(dg_task)
-        final_files = [fn+'.keep' for fn in dg_files]
+        final_files = dg_task.targets
 
         for fn in final_files:
             tasks.append(abundance_dist_task(fn, ct_fn, fn + '.hist'))

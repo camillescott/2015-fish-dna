@@ -16,19 +16,10 @@
 
         "khmer": {
             "normalization": {
-                "single": {
-                    "ksize": 25, 
-                    "table_size": 2e9,
-                    "n_tables": 4,
-                    "coverage": 10
-                }, 
-
-                "pooled": { 
-                    "ksize": 25,
-                    "table_size": 4e9,
-                    "n_tables": 4,
-                    "coverage": 8 
-                }
+                "ksize": 25, 
+                "table_size": 2e9,
+                "n_tables": 4,
+                "coverage": 10
             },
 
             "counting": {
