@@ -221,21 +221,38 @@ def diginorm_task(input_files, dg_cfg, label, ct_outfn=None):
             'targets': targets,
             'clean': [clean_targets]}
 
+'''
 @create_task_object
-def load_counting_task(input_fn, table_fn, counting_cfg, label):
+def chained_diginorm_task(input_files, dg_cfg, label, ct_outfn):
+
+    ksize = dg_cfg['ksize']
+    table_size = dg_cfg['table_size']
+    n_tables = dg_cfg['n_tables']
+    coverage = dg_cfg['coverage']
+
+    name = 'normalize_by_median_chained_' + label
+    cmd = []
+    for n, fn in enumerate(input_files):
+'''
+
+
+@create_task_object
+def load_counting_task(file_list, table_fn, counting_cfg, label):
 
     name = 'load_into_counting_' + table_fn + '_' + label
 
     table_size = counting_cfg['table_size']
     n_tables = counting_cfg['n_tables']
     ksize = counting_cfg['ksize']
+    n_threads = counting_cfg['n_threads']
 
-    cmd = 'load-into-counting.py -x {table_size} -N {n_tables} -k {ksize} {table_fn} {input_fn}'.format(**locals())
+    cmd = 'load-into-counting.py -T {n_threads} -x {table_size} -N {n_tables} -k {ksize} '\
+            '{table_fn} {inputs}'.format(inputs=' '.join(file_list), **locals())
 
     return {'name': name,
             'title': title_with_actions,
             'actions': [cmd],
-            'file_dep': [input_fn],
+            'file_dep': file_list,
             'targets': [table_fn],
             'clean': [clean_targets]}
 
@@ -494,7 +511,7 @@ def busco_task(input_filename, output_dir, busco_db_dir, input_type, busco_cfg):
 @create_task_object
 def quast_task(assemblies, quast_cfg, label):
 
-    cmd = 'python {path}/quast.py -L -m {min_length} -t {n_threads} -e --no-snps {files}'.format(
+    cmd = 'python {path}/quast.py {params} -L -m {min_length} -t {n_threads} -e --no-snps {files}'.format(
                files=' '.join(assemblies), **quast_cfg)
 
     return {'name': 'quast_' + label,

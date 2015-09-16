@@ -105,6 +105,11 @@ def main():
             tasks.append(interleave_task(left + '.paired', right + '.paired', sample + '.qc'))
             qc_files.append(sample + '.qc')
 
+        counting_cfg = config['pipeline']['khmer']['counting']
+        raw_ct_fn = config['pipeline']['prefix'] + '.raw.ct'
+        tasks.append(load_counting_task(qc_files, raw_ct_fn, counting_cfg, 'raw-fish'))
+
+
         # Run diginorm seperately on each sample
         dg_single_config = config['pipeline']['khmer']['normalization']['single']
         for qc_file in qc_files:
