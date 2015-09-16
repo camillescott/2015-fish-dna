@@ -1,0 +1,87 @@
+#!/usr/bin/env python
+from __future__ import print_function
+
+import argparse
+import os
+import sys
+import json
+import pprint
+import time
+
+from tasks import *
+
+from doit.cmd_base import TaskLoader
+from doit.doit_cmd import DoitMain
+
+def run_tasks(tasks, args, config={'verbosity': 2}):
+    
+    if type(tasks) is not list:
+        raise TypeError('tasks must be a list')
+   
+    class Loader(TaskLoader):
+        @staticmethod
+        def load_tasks(cmd, opt_values, pos_args):
+            return tasks, config
+   
+    DoitMain(Loader()).run(args)
+
+CUR_TIME = time.strftime('%Y-%m-%d-%H%M')
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--assemblies', nargs='+')
+    parser.add_argument('--config', default='config.json')
+    parser.add_argument('--print-tasks', action='store_true', default=False)
+    parser.add_argument('--data-dir', default='_data')
+    parser.add_argument('--work-dir', default='_work')
+    args, doit_args = parser.parse_known_args()
+
+    with open(args.config, 'r') as fp:
+        print('** Using config found in {c}'.format(c=args.config), file=sys.stderr)
+        config = json.load(fp)
+    
+    desc = '''
+####################################################################
+
+ 2015 Fish DNA assembly Pipeline
+
+ * Authors:
+   {authors}
+
+ * About:
+   {desc}
+
+####################################################################
+'''.format(authors=', '.join(config['meta']['authors']),
+           desc=config['meta']['description'])
+    print(desc, file=sys.stderr)
+
+    assemblies = [os.path.abspath(fn) for fn in args.assemblies]
+    data_dir = os.path.abspath(args.data_dir)
+    work_dir = os.path.abspath(args.work_dir)
+    prefix = config['pipeline']['prefix']
+
+    old_dir = os.getcwd()
+    try:
+        if not os.path.exists(work_dir):
+            os.makedirs(work_dir)
+        os.chdir(work_dir)
+        print('** Current Working Directory: {w}'.format(w=os.getcwd()), file=sys.stderr)
+        print('** Current Data Directory: {d}\n'.format(d=data_dir), file=sys.stderr)
+
+        tasks = []
+
+        quast_cfg = config['pipeline']['quast']
+        tasks.append(quast_task(assemblies, quast_cfg, prefix))
+
+        if args.print_tasks:
+            for task in tasks:
+                print('-----\n', task)
+                pprint.pprint(task.__dict__)
+
+        run_tasks(tasks, doit_args)
+
+    finally:
+        os.chdir(old_dir)
+
+main()

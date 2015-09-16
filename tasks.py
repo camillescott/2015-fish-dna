@@ -107,6 +107,35 @@ def build_velvet_task(file_list, template_fn, cur_time, velvet_cfg, pbs_cfg, lab
             'targets': [script_fn],
             'clean': [clean_targets]}
 
+
+@create_task_object
+def build_spades_task(file_list, template_fn, cur_time, spades_cfg, pbs_cfg, label=''):
+
+    if not label:
+        label = 'spades_' + '_'.join(file_list)
+
+    with open(template_fn) as fp:
+        template = jinja2.Template(fp.read())
+
+    script_fn = cur_time + '-' + spades_cfg['script_file']
+    spades_cfg['directory'] = cur_time + '-' + spades_cfg['directory']
+
+    spades_cfg.update(pbs_cfg)
+    def create_script(file_list, spades_cfg, tpl):
+        with open(script_fn, 'wb') as fp:
+            pbs = tpl.render(file_list=file_list, **spades_cfg)
+            fp.write(pbs)
+
+    #cmd = 'qsub {fn}'.format(fn=script_fn)
+
+    return {'title': title_with_actions,
+            'name': label,
+            'actions': [(create_script, [file_list, spades_cfg, template])],
+            'file_dep': file_list + [template_fn],
+            'targets': [script_fn],
+            'clean': [clean_targets]}
+
+
 @create_task_object
 def format_abyss_task(input_filename, output_filename, label=''):
 
@@ -299,14 +328,14 @@ def blast_format_task(db_fn, db_out_fn, db_type):
             'clean': [clean_targets, 'rm -f {target_fn}.*'.format(**locals())] }
 
 @create_task_object
-def link_file_task(src):
+def link_file_task(src, dst=''):
     ''' Soft-link file to the current directory
     '''
-    cmd = 'ln -fs {src}'.format(src=src)
+    cmd = 'ln -fs {src} {dst}'.format(src=src, dst=dst)
     return {'title': title_with_actions,
-            'name': 'ln_' + os.path.basename(src),
+            'name': 'ln_' + os.path.basename(src) + ('_' + dst if dst else ' '),
             'actions': [cmd],
-            'targets': [os.path.basename(src)],
+            'targets': [os.path.basename(src) if not dst else dst],
             'uptodate': [run_once],
             'clean': [clean_targets]}
 
@@ -440,23 +469,39 @@ def group_task(group_name, task_names):
 
 # python3 BUSCO_v1.1b1/BUSCO_v1.1b1.py -in petMar2.cdna.fa -o petMar2.cdna.busco.test -l vertebrata/ -m trans -c 4
 @create_task_object
-def busco_task(input_filename, output_dir, busco_db_dir, input_type, busco_cfg, label=''):
+def busco_task(input_filename, output_dir, busco_db_dir, input_type, busco_cfg):
     
-    name = '_'.join(['busco', input_filename, os.path.basename(busco_db_dir), label])
+    name = '_'.join(['busco', input_filename, os.path.basename(busco_db_dir)])
 
     assert input_type in ['genome', 'OGS', 'trans']
     n_threads = busco_cfg['n_threads']
     busco_path = busco_cfg['path']
 
-    cmd = 'python3 {busco_path} -in {in_fn} -o {out_dir} -l {db_dir} -m {in_type} -c {n_threads}'.format(
-            busco_path=busco_path, in_fn=input_filename, out_dir=output_dir, db_dir=busco_db_dir, 
+    cmd = 'python3 {busco_path} -in {in_fn} -o {out_dir} -l {db_dir} '\
+            '-m {in_type} -c {n_threads}'.format(busco_path=busco_path, 
+            in_fn=input_filename, out_dir=output_dir, db_dir=busco_db_dir, 
             in_type=input_type, n_threads=n_threads)
 
     return {'name': name,
             'title': title_with_actions,
             'actions': [cmd],
-            'targets': [output_dir],
+            'targets': ['run_' + output_dir, 
+                        os.path.join('run_' + output_dir, 'short_summary_' + output_dir.rstrip('/'))],
             'file_dep': [input_filename],
             'uptodate': [run_once],
-            'clean': [(clean_folder, [output_dir])]}
+            'clean': [(clean_folder, ['run_' + output_dir])]}
+
+@create_task_object
+def quast_task(assemblies, quast_cfg, label):
+
+    cmd = 'python {path}/quast.py -L -m {min_length} -t {n_threads} -e --no-snps {files}'.format(
+               files=' '.join(assemblies), **quast_cfg)
+
+    return {'name': 'quast_' + label,
+            'title': title_with_actions,
+            'actions': [cmd],
+            'targets': ['quast_results', 'quast_results/latest'],
+            'file_dep': assemblies,
+            'uptodate': [run_once],
+            'clean': [(clean_folder, ['quast_results'])]}
 

@@ -139,6 +139,14 @@ def main():
                                        config['pipeline']['pbs-params'], 
                                        label='velvet_' + config['pipeline']['prefix']))
 
+        final_files_spades = [fn+'.fq' for fn in final_files]
+        for fn in final_files:
+            tasks.append(link_file_task(fn, fn+'.fq'))
+        spades_template = os.path.join(old_dir, config['pipeline']['spades']['template_file'])
+        tasks.append(build_spades_task(final_files_spades, spades_template, CUR_TIME,
+                                       config['pipeline']['spades'],
+                                       config['pipeline']['pbs-params'],
+                                       label='spades_' + config['pipeline']['prefix']))
         #abyss_files = [fn + '.abyss.fq' for fn in dg_files]
         #for infn, outfn in zip(dg_files, abyss_files):
         #    tasks.append(format_abyss_task(infn, outfn))

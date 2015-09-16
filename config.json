@@ -44,6 +44,12 @@
             "prefix": "fish.histograms"
         },
 
+        "quast": {
+            "n_threads": 8,
+            "path": "/mnt/home/welcherc/quast-3.1",
+            "min_length": 300
+        },
+
         "fastqc": {
             "n_threads": 4
         },
@@ -59,16 +65,27 @@
             "time": "120:00:00",
             "n_threads": 32,
             "mem": "1500gb",
-			"k": 45,
+			"k": 31,
             "min_contig_lgth": 300,
-            "cov_cutoff": 4,
+            "cov_cutoff": 3,
             "exp_cov": "auto",
-            "ins_length": 300,
+            "ins_length": 350,
             "max_gap_count": 3,
             "min_pair_count": 5,
             "directory": "fish-dna-velvet"
         },
-
+        
+		"spades": {
+            "min_pair_count": 5,
+			"template_file": "spades.tpl",
+			"script_file": "spades.sh",
+            "time": "120:00:00",
+            "n_threads": 32,
+            "mem": "500gb",
+            "cov_cutoff": "auto",
+            "directory": "fish-dna-spades",
+			"bin": "/home/welcherc/SPAdes-3.6.0-Linux/bin"
+        },
         "abyss": {
             "template_file": "abyss.tpl",
             "script_file": "abyss.sh",
