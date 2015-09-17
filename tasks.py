@@ -191,33 +191,35 @@ def build_abyss_task(file_list, abyss_cfg, pbs_cfg, label=''):
 
 
 @create_task_object
-def diginorm_task(input_files, dg_cfg, label, ct_outfn=None):
+def diginorm_task(input_fn, output_fn, dg_cfg, load_ct=None, save_ct=None):
 
     ksize = dg_cfg['ksize']
     table_size = dg_cfg['table_size']
     n_tables = dg_cfg['n_tables']
     coverage = dg_cfg['coverage']
 
-    name = 'normalize_by_median_' + label
-    report_fn = label + '.report.txt'
+    name = 'normalize_by_median:' + output_fn
+    report_fn = output_fn + '.report.txt'
 
-    inputs = ' '.join(input_files)
-    ct_out_str = ''
-    if ct_outfn is not None:
-        ct_out_str = '-s ' + ct_outfn
-
+    file_dep = [input_fn]
+    targets = [output_fn, report_fn]
     cmd = 'normalize-by-median.py -f -k {ksize} -x {table_size} -N {n_tables} '\
-          '-C {coverage} -R {report_fn} {ct_out_str} {inputs}'.format(**locals())
+          '-C {coverage} -R {report_fn} -o {output_fn} '.format(**locals())
+    
+    if load_ct is not None:
+        cmd += ' -l {} '.format(load_ct)
+        file_dep.append(load_ct)
 
-    targets = [fn + '.keep' for fn in input_files]
-    targets.append(report_fn)
-    if ct_out_str:
-        targets.append(ct_outfn)
+    if save_ct is not None:
+        cmd += ' -s {} '.format(save_ct)
+        targets.append(save_ct)
+
+    cmd += input_fn
 
     return {'title': title_with_actions,
             'name': name,
             'actions': [cmd],
-            'file_dep': input_files,
+            'file_dep': file_dep,
             'targets': targets,
             'clean': [clean_targets]}
 
@@ -242,7 +244,7 @@ def chained_twopass_diginorm_task(input_files, dg_cfg, label, ct_outfn):
               '-C {coverage} -R {report_fn} -o {out_fn} -s {ct_outfn} '.format(**locals())
         if n > 0:
             cmd += '-l {ct_outfn} '.format(**locals())
-        cmd += inputs
+        cmd += fn
         cmd_list.append(cmd)
 
         if n >= len(input_files):
@@ -371,6 +373,7 @@ def link_file_task(src, dst=''):
     return {'title': title_with_actions,
             'name': 'ln_' + os.path.basename(src) + ('_' + dst if dst else ' '),
             'actions': [cmd],
+            'file_dep': [src],
             'targets': [os.path.basename(src) if not dst else dst],
             'uptodate': [run_once],
             'clean': [clean_targets]}

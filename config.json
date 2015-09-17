@@ -40,7 +40,7 @@
             "n_threads": 8,
             "path": "/mnt/home/welcherc/quast-3.1",
             "min_length": 300,
-			"params": "--gage"
+			"params": ""
         },
 
         "fastqc": {

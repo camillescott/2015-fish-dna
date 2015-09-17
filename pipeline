@@ -75,7 +75,7 @@ def main():
         tasks = []
 
         # Download the samples. Might take a loooooooong time!
-        tasks.append(create_folder_task(args.data_dir))
+        tasks.append(create_folder_task(data_dir))
         sample_df = resources_df[resources_df.meta_type == 'sample']
         for key, row in sample_df.iterrows():
             tasks.append(download_task(row.url, os.path.join(data_dir, row.filename)))
@@ -84,6 +84,7 @@ def main():
         for key, row in sample_df.iterrows():
             tasks.append(link_file_task(os.path.join(data_dir, row.filename)))
         
+        # Run first assessment of sample quality
         fastqc_tasks = []
         fastqc_cfg = config['pipeline']['fastqc']
         for key, row in sample_df.iterrows():
@@ -91,6 +92,7 @@ def main():
         tasks.extend(fastqc_tasks)
         tasks.append(group_task('fastqc-raw', [t.name for t in fastqc_tasks]))
 
+        # Run trimmomatic on the samples
         qc_files = []
         trim_cfg = config['pipeline']['trimmomatic']
         adapter_row = resources_df.ix['adapters']
@@ -105,50 +107,52 @@ def main():
             tasks.append(interleave_task(left + '.paired', right + '.paired', sample + '.qc'))
             qc_files.append(sample + '.qc')
 
+        # Load the samples into a countgraph
         counting_cfg = config['pipeline']['khmer']['counting']
-        raw_ct_fn = config['pipeline']['prefix'] + '.raw.ct'
-        tasks.append(load_counting_task(qc_files, raw_ct_fn, counting_cfg, 'raw-fish'))
+        qc_ct_fn = config['pipeline']['prefix'] + '.qc.ct'
+        tasks.append(load_counting_task(qc_files, qc_ct_fn, counting_cfg, 'qc-fish'))
 
 
-        # Run two-pass chained diginorm on the samples
-        dg_config = config['pipeline']['khmer']['normalization']
-        ct_fn = config['pipeline']['prefix'] + '.2pc.ct'
-        dg_task = chained_twopass_diginorm_task(qc_files,
-                                                dg_config, 
-                                                'fish',
-                                                ct_fn)
-        tasks.append(dg_task)
-        final_files = dg_task.targets
+        # Run two-pass diginorm on the samples using the countgraph
+        dg_cfg = config['pipeline']['khmer']['normalization']
+        final_files = []
+        for fn in qc_files:
+            output_fn = fn + '.C{}'.format(dg_cfg['coverage'])
+            tasks.append(diginorm_task(fn, output_fn, dg_cfg, load_ct=qc_ct_fn))
+            tasks.append(link_file_task(output_fn, output_fn+'.fq'))
+            final_files.append(output_fn + '.fq')
 
+        # Generate abundance histograms
         for fn in final_files:
-            tasks.append(abundance_dist_task(fn, ct_fn, fn + '.hist'))
+            tasks.append(abundance_dist_task(fn, qc_ct_fn, fn + '.hist'))
 
+        # Run KmerGenie on the processed samples
         kmgenie_cfg = config['pipeline']['kmergenie']
         kmgenie_task = kmergenie_task(final_files, kmgenie_cfg)
         tasks.append(kmgenie_task)
         tasks.append(group_task('kmergenie', [kmgenie_task.name]))
         
+        # Perform a round of FastQC on the processed samples
         fastqc_final_tasks = []
         for fn in final_files:
             fastqc_final_tasks.append(fastqc_task(fn, fastqc_cfg))
         tasks.extend(fastqc_final_tasks)
         tasks.append(group_task('fastqc-final', [t.name for t in fastqc_final_tasks]))
 
+        # Generate the velvet submission script
         velvet_template = os.path.join(old_dir, config['pipeline']['velvet']['template_file'])
         tasks.append(build_velvet_task(final_files, velvet_template, CUR_TIME,
                                        config['pipeline']['velvet'],
                                        config['pipeline']['pbs-params'], 
                                        label='velvet_' + config['pipeline']['prefix']))
 
-        final_files_spades = [fn+'.fq' for fn in final_files]
-        for fn in final_files:
-            tasks.append(link_file_task(fn, fn+'.fq'))
+        # Generate the spades submission script
         spades_template = os.path.join(old_dir, config['pipeline']['spades']['template_file'])
-        tasks.append(build_spades_task(final_files_spades, spades_template, CUR_TIME,
+        tasks.append(build_spades_task(final_files, spades_template, CUR_TIME,
                                        config['pipeline']['spades'],
                                        config['pipeline']['pbs-params'],
                                        label='spades_' + config['pipeline']['prefix']))
-        #abyss_files = [fn + '.abyss.fq' for fn in dg_files]
+        
         #for infn, outfn in zip(dg_files, abyss_files):
         #    tasks.append(format_abyss_task(infn, outfn))
 

@@ -35,6 +35,24 @@
 		"url": "http://edhar.genomecenter.ucdavis.edu/~russell/fish/biggerrun/Checkmate_NoIndex_L007_R3_001.fastq.gz"
 	},
 
+	"Fish_MiSeq_R1": {
+		"access": "remote_file",
+		"fragment": "left",
+		"sample": "Fish_MiSeq",
+		"meta_type": "sample",
+		"filename": "fish.fastq.1.gz",
+		"url": "http://edhar.genomecenter.ucdavis.edu/~camille/fish/fish.fastq.1.gz"
+	},
+
+	"Fish_MiSeq_R2": {
+		"access": "remote_file",
+		"fragment": "right",
+		"sample": "Fish_MiSeq",
+		"meta_type": "sample",
+		"filename": "fish.fastq.2.gz",
+		"url": "http://edhar.genomecenter.ucdavis.edu/~camille/fish/fish.fastq.2.gz"
+	},
+
 	"adapters": {
 		"meta_type": "fasta_database",
 		"filename": "adapters.fa",

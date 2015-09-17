@@ -7,7 +7,7 @@
     },
 
     "pipeline": {
-        "prefix": "fish",
+        "prefix": "fish-test",
         
         "trimmomatic": { 
             "n_threads": 4,
@@ -16,25 +16,31 @@
 
         "khmer": {
             "normalization": {
-                "single": {
-                    "ksize": 25, 
-                    "table_size": 1e8,
-                    "n_tables": 4,
-                    "coverage": 10
-                }, 
+                "ksize": 25, 
+                "table_size": 1e8,
+                "n_tables": 4,
+                "coverage": 10
+            },
 
-                "pooled": { 
-                    "ksize": 25,
-                    "table_size": 2e8,
-                    "n_tables": 4,
-                    "coverage": 20 
-                }
+            "counting": {
+                "ksize": 25,
+                "table_size": 1e8,
+                "n_tables": 4,
+                "n_threads": 8
             }
         },
 
         "kmergenie": {
             "params": "--diploid",
-            "prefix": "fish.histograms"
+			"n_threads": 8,
+            "prefix": "fish.histograms.test"
+        },
+
+        "quast": {
+            "n_threads": 8,
+            "path": "/mnt/home/welcherc/quast-3.1",
+            "min_length": 300,
+			"params": "--gage"
         },
 
         "fastqc": {
@@ -49,27 +55,36 @@
         "velvet": {
 			"template_file": "velvet.tpl",
 			"script_file": "velvet.sh",
-            "time": "4:00:00",
-            "n_threads": 16,
-            "mem": "48gb",
-			"k_start": 23,
-            "k_end": 43,
-            "k_step": 4,
+            "time": "1:00:00",
+            "n_threads": 2,
+            "mem": "150mb",
+			"k": 31,
             "min_contig_lgth": 300,
-            "cov_cutoff": 8,
-            "exp_cov": 18,
-            "ins_length": 300,
-            "max_gap_count": 7,
-            "min_pair_count": 7,
-            "directory": "2015-fish-dna-velvet"
+            "cov_cutoff": 3,
+            "exp_cov": "auto",
+            "ins_length": 350,
+            "max_gap_count": 3,
+            "min_pair_count": 5,
+            "directory": "fish-dna-velvet"
         },
-
+        
+		"spades": {
+            "min_pair_count": 5,
+			"template_file": "spades.tpl",
+			"script_file": "spades.sh",
+            "time": "1:00:00",
+            "n_threads": 2,
+            "mem": "500mb",
+            "cov_cutoff": "auto",
+            "directory": "fish-dna-spades",
+			"bin": "/home/welcherc/SPAdes-3.6.0-Linux/bin"
+        },
         "abyss": {
             "template_file": "abyss.tpl",
             "script_file": "abyss.sh",
-            "time": "4:00:00",
+            "time": "72:00:00",
             "n_threads": 32,
-            "mem": "48gb",
+            "mem": "512gb",
             "k": 25,
             "name": "2015-fish-dna-abyss"
         }
